@@ -1,0 +1,6 @@
+fastapi
+uvicorn[standard]
+yclients-api
+httpx
+pydantic-settings
+email-validator
