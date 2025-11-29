@@ -1,16 +1,17 @@
-# yclients/client.py
-
+from typing import Any, Dict
 import httpx
-from typing import Any, Dict, List
+from fastapi import HTTPException
+
 from YCLIENTS.app.config import settings
-from YCLIENTS.yclients.mappings import SERVICE_MAP, STAFF_MAP
-from YCLIENTS.yclients.models import SlotsRequest
+from .models import SlotsRequest
+from .mappings import SERVICE_MAP, STAFF_MAP
+
 
 class YclientsAPI:
     def __init__(self) -> None:
         self.base_url = settings.YCLIENTS_BASE_URL
         self.company_id = settings.YCLIENTS_COMPANY_ID
-        self.form_id = settings.YCLIENTS_FORM_ID      # добавь это поле в config
+        self.form_id = settings.YCLIENTS_FORM_ID
 
     def _headers(self) -> Dict[str, str]:
         return {
@@ -23,7 +24,7 @@ class YclientsAPI:
         }
 
     # ========= СЛОТЫ =========
-    async def get_slots(self, payload: SlotsRequest) -> Dict[str, List[str]]:
+    async def get_slots(self, payload: SlotsRequest) -> Dict[str, Any]:
         try:
             print("SLOTS REQUEST BODY:", payload.model_dump())
 
@@ -35,47 +36,47 @@ class YclientsAPI:
             y_service_id = SERVICE_MAP[payload.service_id]
             y_staff_id = STAFF_MAP[payload.staff_id]
 
-            url = (
-                f"{self.base_url}/book_times/"
-                f"{self.company_id}/{self.form_id}"
-            )
-
+            url = f"{self.base_url}/book_times/{self.company_id}/{self.form_id}"
             params = {
                 "staff_id": y_staff_id,
                 "service_id": y_service_id,
                 "date": payload.day,
             }
 
-            async with httpx.AsyncClient(timeout=15.0) as client:
-                response = await client.get(url, params=params, headers=self._headers())
+            async with httpx.AsyncClient(timeout=settings.HTTPX_TIMEOUT) as client:
+                resp = await client.get(url, params=params, headers=self._headers())
 
-            print("SLOTS RAW RESPONSE:", response.status_code, response.text)
+            print("SLOTS RAW RESPONSE:", resp.status_code, resp.text)
 
-            if response.status_code != 200:
-                raise HTTPException(
-                    status_code=response.status_code, detail=response.text
-                )
+            if resp.status_code != 200:
+                raise HTTPException(status_code=resp.status_code, detail=resp.text)
 
-            data = response.json()
+            data = resp.json()
             slots = [t["time"] for t in data.get("data", [])]
+
             return {"slots": slots}
 
         except HTTPException:
             raise
         except Exception as e:
             print("SLOTS ERROR:", repr(e))
-            raise HTTPException(status_code=400, detail=str(e))
+            raise HTTPException(status_code=400, detail=f"YCLIENTS slots error: {e}")
 
     # ========= СОЗДАНИЕ ЗАПИСИ =========
     async def create_record(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        POST /book_record/{company_id}
+        payload — в том же формате, что ты уже проверял через Postman.
+        """
         url = f"{self.base_url}/book_record/{self.company_id}"
 
-        async with httpx.AsyncClient(timeout=15.0) as client:
+        async with httpx.AsyncClient(timeout=settings.HTTPX_TIMEOUT) as client:
             resp = await client.post(url, json=payload, headers=self._headers())
 
-        if resp.status_code not in (200, 201):
-            raise RuntimeError(
-                f"YCLIENTS book_record error {resp.status_code}: {resp.text}"
-            )
+        print("CREATE RAW RESPONSE:", resp.status_code, resp.text)
 
-        return resp.json()
+        if resp.status_code not in (200, 201):
+            raise HTTPException(status_code=resp.status_code, detail=resp.text)
+
+        data = resp.json()
+        return {"success": True, "data": data.get("data")}

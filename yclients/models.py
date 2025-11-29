@@ -1,31 +1,30 @@
-from pydantic import BaseModel, EmailStr, Field
 from typing import List
+from pydantic import BaseModel
 
 
-# ====== СЛОТЫ ======
+# ---------- SLOTS ----------
 
 class SlotsRequest(BaseModel):
-    day: str = Field(..., description="Дата в формате YYYY-MM-DD")
-    service_id: int
-    staff_id: int
+    day: str          # "YYYY-MM-DD"
+    service_id: int   # внутренний id → см. SERVICE_MAP
+    staff_id: int     # внутренний id → см. STAFF_MAP
 
 
 class SlotsResponse(BaseModel):
     slots: List[str]
 
 
-# ====== СОЗДАНИЕ ЗАПИСИ ======
+# ---------- CREATE RECORD ----------
 
 class AppointmentItem(BaseModel):
-    id: int
-    services: List[int]
-    staff_id: int
-    # строка ISO, то есть то, что вернул /book_times (без превращения в datetime-объект)
-    datetime: str
+    id: int                  # можно просто 1
+    services: List[int]      # YCLIENTS service_id (напр. 24930498)
+    staff_id: int            # YCLIENTS staff_id
+    datetime: str            # ISO-строка, как ты уже отправлял
 
 
 class CreateRecordRequest(BaseModel):
     phone: str
     fullname: str
-    email: EmailStr
+    email: str
     appointments: List[AppointmentItem]
