@@ -1,7 +1,6 @@
 from typing import List
 from pydantic import BaseModel
 
-
 # ---------- SLOTS ----------
 
 class SlotsRequest(BaseModel):
@@ -24,7 +23,8 @@ class AppointmentItem(BaseModel):
 
 
 class CreateRecordRequest(BaseModel):
-    phone: str
-    fullname: str
-    email: str
-    appointments: List[AppointmentItem]
+    datetime: str          # "2025-11-30T13:00:00"
+    service_id: int        # наш внутренний ID (1 = мужская стрижка)
+    staff_id: int          # наш внутренний ID (10 = Ярослав)
+    client_name: str
+    client_phone: str     
