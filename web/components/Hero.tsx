@@ -10,10 +10,9 @@ export const Hero: React.FC = () => {
       {/* 
           NOTE: The Starfield/Warp effect is now handled entirely by BrandLogo.tsx 
           which sits in a fixed layer behind this content.
-          This ensures the transition from Stars -> Logo is seamless.
       */}
       
-      {/* 2. Vignette (Optional, keeping for depth) */}
+      {/* 2. Vignette (Keeping for depth, but static) */}
       <div className="absolute inset-0 bg-radial-gradient from-transparent via-dark-bg/60 to-dark-bg pointer-events-none z-10" />
 
       {/* 3. Content Layer */}
@@ -21,7 +20,7 @@ export const Hero: React.FC = () => {
         <motion.div
            initial={{ opacity: 0 }}
            animate={{ opacity: 1 }}
-           transition={{ delay: 6, duration: 1 }} // Appears after the Logo Assembly is done
+           transition={{ delay: 2, duration: 1.5 }} // Faster appearance, simpler transition
            className="absolute bottom-[15%] text-zinc-500 text-xs tracking-[0.3em] uppercase opacity-60"
         >
              Scroll to explore
@@ -32,7 +31,7 @@ export const Hero: React.FC = () => {
       <motion.div 
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ delay: 6.5, duration: 1 }}
+        transition={{ delay: 2.5, duration: 1 }}
         className="absolute bottom-6 left-1/2 -translate-x-1/2 cursor-pointer z-30 group pointer-events-auto"
         onClick={() => document.getElementById('features')?.scrollIntoView({ behavior: 'smooth' })}
       >

@@ -24,20 +24,25 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   
-  // Track mouse position AND velocity for "drag" effect
+  // Track mouse position
   const mouseRef = useRef({ x: -9999, y: -9999, vx: 0, vy: 0, lastX: -9999, lastY: -9999 });
   const startTimeRef = useRef<number>(Date.now());
+  const isMobileRef = useRef<boolean>(false);
 
-  // Scroll Effect
+  // Scroll Effect (Throttle this or use lightweight transforms)
   useEffect(() => {
+    isMobileRef.current = window.innerWidth < 768;
+
     const handleScroll = () => {
        if (containerRef.current) {
           const scrollY = window.scrollY;
-          const blur = Math.min(scrollY / 40, 12); 
+          // Reduce effects on mobile to save GPU
+          if (isMobileRef.current && scrollY > 100) return;
+
           const opacity = Math.max(1 - scrollY / 700, 0); 
           const scale = Math.max(1 - scrollY / 1500, 0.9);
           
-          containerRef.current.style.filter = `blur(${blur}px)`;
+          // Removed blur filter on scroll for performance
           containerRef.current.style.opacity = `${opacity}`;
           containerRef.current.style.transform = `scale(${scale})`;
           containerRef.current.style.pointerEvents = opacity <= 0.05 ? 'none' : 'auto';
@@ -47,20 +52,20 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  // Advanced Mouse Tracking
+  // Mouse Tracking (Desktop Only)
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-        const now = Date.now();
+        if (window.innerWidth < 768) return; // Disable on mobile
+
         const currentX = e.clientX;
         const currentY = e.clientY;
         
-        // Calculate velocity
         const dx = currentX - mouseRef.current.lastX;
         const dy = currentY - mouseRef.current.lastY;
         
         mouseRef.current.x = currentX;
         mouseRef.current.y = currentY;
-        mouseRef.current.vx = dx; // Simple velocity
+        mouseRef.current.vx = dx; 
         mouseRef.current.vy = dy;
         mouseRef.current.lastX = currentX;
         mouseRef.current.lastY = currentY;
@@ -73,7 +78,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const ctx = canvas.getContext('2d', { willReadFrequently: true });
+    const ctx = canvas.getContext('2d', { willReadFrequently: true, alpha: true });
     if (!ctx) return;
 
     let particles: Particle[] = [];
@@ -83,7 +88,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
 
     const ASSEMBLY_START_GLOBAL = 500; 
     const MAX_ASSEMBLY_DELAY = 1500;    
-    const WAVE_APPEAR_TIME = 2500;      
+    const WAVE_APPEAR_TIME = 2000;      
 
     const initParticles = (w: number, h: number) => {
       particles = [];
@@ -96,7 +101,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       const centerY = h / 2;
 
       // 1. Generate Text Bitmap
-      const fontSize = Math.min(w * 0.18, 220); 
+      // Make text slightly larger on mobile for readability
+      const fontSize = Math.min(w * (isMobileRef.current ? 0.22 : 0.18), 220); 
       tempCtx.font = `900 ${fontSize}px "Inter", sans-serif`;
       tempCtx.textAlign = 'center';
       tempCtx.textBaseline = 'middle';
@@ -104,7 +110,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       tempCtx.fillText('Lucy AI', w / 2, centerY - 20);
 
       const imageData = tempCtx.getImageData(0, 0, w, h).data;
-      const skip = 4;
+      
+      // Optimization: Skip more pixels on mobile to reduce particle count
+      const skip = isMobileRef.current ? 6 : 4;
 
       // 2. Create Text Particles
       for (let y = 0; y < h; y += skip) {
@@ -123,7 +131,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
                vx: 0,
                vy: 0,
                color: color,
-               size: Math.random() * 2 + 1,
+               size: isMobileRef.current ? 1.5 : (Math.random() * 2 + 1),
                type: 'text',
                randomX: (Math.random() - 0.5) * w, 
                randomY: (Math.random() - 0.5) * h,
@@ -134,7 +142,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       }
 
       // 3. Create Wave Particles
-      const wavePoints = 180;
+      const wavePoints = isMobileRef.current ? 80 : 180;
       for (let i = 0; i < wavePoints; i++) {
         for (let layer = 0; layer < 3; layer++) {
              const tx = (w / wavePoints) * i;
@@ -159,12 +167,20 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
     };
 
     const handleResize = () => {
-      const dpr = window.devicePixelRatio || 1;
-      width = window.innerWidth;
-      height = window.innerHeight;
+      const newWidth = window.innerWidth;
+      const newHeight = window.innerHeight;
+
+      // Prevent re-init on mobile address bar scroll (width doesn't change usually)
+      if (Math.abs(newWidth - width) < 50 && Math.abs(newHeight - height) < 150) return;
+
+      width = newWidth;
+      height = newHeight;
+      isMobileRef.current = width < 768;
       
+      const dpr = window.devicePixelRatio || 1;
       canvas.width = width * dpr;
       canvas.height = height * dpr;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // Reset transform
       ctx.scale(dpr, dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
@@ -179,7 +195,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       const now = Date.now();
       const elapsed = now - startTimeRef.current;
       
-      // Gradually decrease mouse velocity (friction on the mouse tracker itself)
+      // Gradually decrease mouse velocity
       mouseRef.current.vx *= 0.9;
       mouseRef.current.vy *= 0.9;
 
@@ -187,11 +203,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       
       const mx = mouseRef.current.x; 
       const my = mouseRef.current.y; 
-      // Mouse velocity influence
       const mvx = mouseRef.current.vx;
       const mvy = mouseRef.current.vy;
       
       const timeSec = elapsed * 0.001;
+      const isMobile = isMobileRef.current;
 
       particles.forEach((p, i) => {
         const isTextReady = p.type === 'text' && (elapsed > ASSEMBLY_START_GLOBAL + p.assemblyDelay);
@@ -199,7 +215,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
         const isStable = isTextReady || isWaveReady;
 
         if (!isStable) {
-            // WARP DRIVE
+            // WARP DRIVE (Simplified for mobile perf)
             p.z -= 25; 
             if (p.z <= 1) {
                 p.z = width * 2; 
@@ -229,35 +245,35 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
                 destY = p.targetY + Math.sin(p.targetX * freq + timeSec * speed) * amp;
             }
 
-            // --- FLUID MOUSE PHYSICS ---
-            const dx = p.x - mx;
-            const dy = p.y - my;
-            const dist = Math.sqrt(dx*dx + dy*dy);
-            const interactionRadius = 160; 
-
-            if (dist < interactionRadius) {
-                const influence = Math.pow(1 - dist / interactionRadius, 3); // Cubic falloff for smoother edge
-                
-                // Repulsion (push away)
-                const angle = Math.atan2(dy, dx);
-                const repelForce = 15 * influence;
-                p.vx += Math.cos(angle) * repelForce;
-                p.vy += Math.sin(angle) * repelForce;
-
-                // Drag (follow mouse movement)
-                // If mouse is moving fast, particles get dragged along slightly
-                const dragFactor = 0.4 * influence;
-                p.vx += mvx * dragFactor;
-                p.vy += mvy * dragFactor;
+            // --- FLUID MOUSE PHYSICS (SKIP ON MOBILE) ---
+            if (!isMobile) {
+                const dx = p.x - mx;
+                const dy = p.y - my;
+                // Fast distance check (box check) before sqrt
+                if (Math.abs(dx) < 160 && Math.abs(dy) < 160) {
+                     const dist = Math.sqrt(dx*dx + dy*dy);
+                     const interactionRadius = 160; 
+        
+                     if (dist < interactionRadius) {
+                        const influence = Math.pow(1 - dist / interactionRadius, 3);
+                        const angle = Math.atan2(dy, dx);
+                        const repelForce = 15 * influence;
+                        p.vx += Math.cos(angle) * repelForce;
+                        p.vy += Math.sin(angle) * repelForce;
+                        
+                        const dragFactor = 0.4 * influence;
+                        p.vx += mvx * dragFactor;
+                        p.vy += mvy * dragFactor;
+                     }
+                }
             }
 
-            // Spring Physics (Return home)
-            const springStiffness = p.type === 'wave' ? 0.04 : 0.03; // Softer spring for fluid feel
+            // Spring Physics
+            const springStiffness = p.type === 'wave' ? 0.04 : 0.03;
             p.vx += (destX - p.x) * springStiffness;
             p.vy += (destY - p.y) * springStiffness;
 
-            // Friction (Damping)
-            // Higher friction = less jitter, more "watery" feel
+            // Friction
             p.vx *= 0.88; 
             p.vy *= 0.88;
 
@@ -282,20 +298,21 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
             }
         }
 
-        if (alpha > 0.01) {
+        if (alpha > 0.1) { // Threshold optimization
             ctx.globalAlpha = alpha;
-            ctx.beginPath();
             ctx.fillStyle = p.color;
             
-            if (p.type === 'wave' && alpha > 0.8) {
+            // Only use shadow blur on desktop for waves
+            if (!isMobile && p.type === 'wave' && alpha > 0.8) {
                 ctx.shadowBlur = 8;
                 ctx.shadowColor = p.color;
             } else {
                 ctx.shadowBlur = 0;
             }
 
-            ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-            ctx.fill();
+            // Draw Rects (Particles) instead of Arcs (Circles) for performance and style
+            const s = p.size;
+            ctx.fillRect(p.x, p.y, s, s);
         }
       });
       
@@ -316,8 +333,11 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
               const spacedTagline = tagline.split('').join('  ');
               
               ctx.fillStyle = `rgba(255, 255, 255, ${taglineAlpha * 0.9})`;
-              ctx.shadowBlur = 15;
-              ctx.shadowColor = `rgba(216, 180, 254, ${taglineAlpha * 0.5})`;
+              // No shadow on mobile text
+              if (!isMobile) {
+                  ctx.shadowBlur = 15;
+                  ctx.shadowColor = `rgba(216, 180, 254, ${taglineAlpha * 0.5})`;
+              }
               ctx.fillText(spacedTagline, width / 2, centerY + 120);
           }
       }

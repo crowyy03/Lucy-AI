@@ -95,7 +95,7 @@ export const Features: React.FC = () => {
           {features.map((feature, idx) => (
             <motion.div
               key={feature.id}
-              layout
+              // Removed 'layout' prop for better mobile performance (prevents heavy reflows)
               initial={{ opacity: 0, y: 30 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true, margin: "-10%" }}
@@ -103,11 +103,11 @@ export const Features: React.FC = () => {
               onMouseEnter={() => setHoveredId(feature.id)}
               onMouseLeave={() => setHoveredId(null)}
               onClick={() => handleTouch(feature.id)} // For mobile tap
-              className={`relative cursor-pointer md:cursor-default overflow-hidden rounded-2xl md:rounded-3xl border transition-all duration-500 flex flex-col justify-start ${
+              className={`relative cursor-pointer md:cursor-default overflow-hidden rounded-2xl md:rounded-3xl border transition-all duration-300 flex flex-col justify-start ${
                 hoveredId === feature.id 
-                  ? 'bg-zinc-900/90 border-lavender/40 shadow-[0_0_40px_rgba(216,180,254,0.15)] z-20 h-[280px] md:h-[320px]' 
+                  ? 'bg-zinc-900/90 border-lavender/40 z-20 h-[280px] md:h-[320px]' 
                   : 'bg-white/[0.03] border-white/[0.05] h-[160px] md:h-[240px] hover:border-white/20'
-              }`}
+              } ${hoveredId === feature.id ? 'shadow-[0_0_20px_rgba(216,180,254,0.1)]' : ''}`}
             >
               <div className="p-4 md:p-8 relative z-10 h-full flex flex-col">
                 <div className="flex justify-between items-start mb-3 md:mb-6">
@@ -142,7 +142,7 @@ export const Features: React.FC = () => {
                 </motion.div>
               </div>
               
-              {/* Background Glow */}
+              {/* Background Glow - Reduced opacity for performance */}
               <div className={`absolute inset-0 bg-gradient-to-b from-lavender/5 to-transparent transition-opacity duration-500 pointer-events-none ${hoveredId === feature.id ? 'opacity-100' : 'opacity-0'}`} />
             </motion.div>
           ))}
