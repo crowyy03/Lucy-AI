@@ -37,7 +37,7 @@ export const Navbar: React.FC = () => {
             <div className="relative w-12 h-8 text-white group-hover:text-lavender transition-colors duration-300">
                <SmallLogo className="w-full h-full" />
             </div>
-            <span className="font-bold text-xl tracking-tight text-white group-hover:text-lavender transition-colors">
+            <span className="font-bold text-2xl md:text-[26px] tracking-tight text-white group-hover:text-lavender transition-colors">
               Lucy AI
             </span>
           </div>

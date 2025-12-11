@@ -1,4 +1,5 @@
 import React, { useEffect, useRef } from 'react';
+import { useIsTouchDevice } from '../hooks/useIsTouchDevice';
 
 interface BrandLogoProps {
   className?: string;
@@ -23,6 +24,7 @@ interface Particle {
 export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full" }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const isTouch = useIsTouchDevice();
   
   // Track mouse position AND velocity for "drag" effect
   const mouseRef = useRef({ x: -9999, y: -9999, vx: 0, vy: 0, lastX: -9999, lastY: -9999 });
@@ -49,8 +51,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
 
   // Advanced Mouse Tracking
   useEffect(() => {
+    if (isTouch) return; // На таче не вешаем мышиные обработчики
     const handleMouseMove = (e: MouseEvent) => {
-        const now = Date.now();
         const currentX = e.clientX;
         const currentY = e.clientY;
         
@@ -67,7 +69,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, []);
+  }, [isTouch]);
 
   // Animation Loop
   useEffect(() => {
@@ -96,7 +98,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       const centerY = h / 2;
 
       // 1. Generate Text Bitmap
-      const fontSize = Math.min(w * 0.18, 220); 
+      const fontSize = Math.min(w * 0.2, isTouch ? 240 : 230); 
       tempCtx.font = `900 ${fontSize}px "Inter", sans-serif`;
       tempCtx.textAlign = 'center';
       tempCtx.textBaseline = 'middle';
@@ -104,7 +106,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       tempCtx.fillText('Lucy AI', w / 2, centerY - 20);
 
       const imageData = tempCtx.getImageData(0, 0, w, h).data;
-      const skip = 4;
+      const skip = isTouch ? 6 : 4; // меньше точек на мобильном для плавности
 
       // 2. Create Text Particles
       for (let y = 0; y < h; y += skip) {
@@ -134,7 +136,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       }
 
       // 3. Create Wave Particles
-      const wavePoints = 180;
+      const wavePoints = isTouch ? 120 : 180;
       for (let i = 0; i < wavePoints; i++) {
         for (let layer = 0; layer < 3; layer++) {
              const tx = (w / wavePoints) * i;
@@ -159,12 +161,14 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
     };
 
     const handleResize = () => {
-      const dpr = window.devicePixelRatio || 1;
+      const dprBase = window.devicePixelRatio || 1;
+      const dpr = isTouch ? Math.min(dprBase, 1.35) : dprBase;
       width = window.innerWidth;
       height = window.innerHeight;
       
       canvas.width = width * dpr;
       canvas.height = height * dpr;
+      ctx.setTransform(1, 0, 0, 1, 0, 0); // сбрасываем предыдущий масштаб
       ctx.scale(dpr, dpr);
       canvas.style.width = `${width}px`;
       canvas.style.height = `${height}px`;
@@ -185,8 +189,8 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
 
       ctx.clearRect(0, 0, width, height);
       
-      const mx = mouseRef.current.x; 
-      const my = mouseRef.current.y; 
+      const mx = isTouch ? -9999 : mouseRef.current.x; 
+      const my = isTouch ? -9999 : mouseRef.current.y; 
       // Mouse velocity influence
       const mvx = mouseRef.current.vx;
       const mvy = mouseRef.current.vy;
@@ -233,9 +237,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
             const dx = p.x - mx;
             const dy = p.y - my;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            const interactionRadius = 160; 
+            const interactionRadius = isTouch ? 0 : 160; 
 
-            if (dist < interactionRadius) {
+            if (dist < interactionRadius && !isTouch) {
                 const influence = Math.pow(1 - dist / interactionRadius, 3); // Cubic falloff for smoother edge
                 
                 // Repulsion (push away)
@@ -331,7 +335,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       window.removeEventListener('resize', handleResize);
       cancelAnimationFrame(animationFrameId);
     };
-  }, []);
+  }, [isTouch]);
 
   return (
     <div ref={containerRef} className={`${className} transition-all duration-100 ease-out will-change-transform`}>
