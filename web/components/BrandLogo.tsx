@@ -71,6 +71,12 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [isTouch]);
 
+  // На таче сразу отключаем текущие координаты и скорость, чтобы не было реакции
+  useEffect(() => {
+    if (!isTouch) return;
+    mouseRef.current = { x: -9999, y: -9999, vx: 0, vy: 0, lastX: -9999, lastY: -9999 };
+  }, [isTouch]);
+
   // Animation Loop
   useEffect(() => {
     const canvas = canvasRef.current;
