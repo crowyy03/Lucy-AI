@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useLayoutEffect, useRef } from 'react';
 import { useIsTouchDevice } from '../hooks/useIsTouchDevice';
 
 interface BrandLogoProps {
@@ -25,19 +25,59 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const isTouch = useIsTouchDevice();
+  const isTouchRef = useRef(false);
+  const disableInteractionsRef = useRef(false);
   
   // Track mouse position AND velocity for "drag" effect
   const mouseRef = useRef({ x: -9999, y: -9999, vx: 0, vy: 0, lastX: -9999, lastY: -9999 });
   const startTimeRef = useRef<number>(Date.now());
 
-  // Scroll Effect
+  // Синхронизируем актуальное значение тача в ref, чтобы колбэки видели свежие данные
   useEffect(() => {
+    isTouchRef.current = isTouch;
+    if (typeof window !== 'undefined') {
+      const coarse = window.matchMedia('(any-pointer: coarse)').matches;
+      const hoverNone = window.matchMedia('(any-hover: none)').matches;
+      disableInteractionsRef.current = isTouch || coarse || hoverNone;
+    } else {
+      disableInteractionsRef.current = isTouch;
+    }
+  }, [isTouch]);
+
+  // Мгновенно фиксируем состояние до первой отрисовки, чтобы исключить реакцию на первый скролл
+  useLayoutEffect(() => {
+    if (!containerRef.current) return;
+    const disable = disableInteractionsRef.current;
+    if (disable) {
+      containerRef.current.style.filter = 'blur(0px)';
+      containerRef.current.style.opacity = '1';
+      containerRef.current.style.transform = 'scale(1)';
+      containerRef.current.style.pointerEvents = 'none';
+    }
+  }, []);
+
+  // Scroll Effect (отключаем на таче/коурс)
+  useEffect(() => {
+    const container = containerRef.current;
+    if (!container) return;
+
+    const disable = disableInteractionsRef.current;
+    if (disable) {
+      container.style.filter = 'blur(0px)';
+      container.style.opacity = '1';
+      container.style.transform = 'scale(1)';
+      container.style.pointerEvents = 'none';
+      return;
+    }
+
     const handleScroll = () => {
+       if (disableInteractionsRef.current) return;
        if (containerRef.current) {
           const scrollY = window.scrollY;
-          const blur = Math.min(scrollY / 40, 12); 
-          const opacity = Math.max(1 - scrollY / 700, 0); 
-          const scale = Math.max(1 - scrollY / 1500, 0.9);
+          // Лого всегда остаётся, но при скролле уходит на задний план и чуть размывается
+          const blur = Math.min(scrollY / 80, 6); 
+          const opacity = Math.max(1 - scrollY / 1200, 0.35); 
+          const scale = Math.max(1 - scrollY / 5000, 0.98);
           
           containerRef.current.style.filter = `blur(${blur}px)`;
           containerRef.current.style.opacity = `${opacity}`;
@@ -47,11 +87,20 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
     };
     window.addEventListener('scroll', handleScroll, { passive: true });
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isTouch]);
+
+  // Для тач-устройств фиксируем состояние (без реакции на скролл/клик)
+  useEffect(() => {
+    if (!isTouch || !containerRef.current) return;
+    containerRef.current.style.filter = 'blur(0px)';
+    containerRef.current.style.opacity = '1';
+    containerRef.current.style.transform = 'scale(1)';
+    containerRef.current.style.pointerEvents = 'none';
+  }, [isTouch]);
 
   // Advanced Mouse Tracking
   useEffect(() => {
-    if (isTouch) return; // На таче не вешаем мышиные обработчики
+    if (disableInteractionsRef.current) return; // На таче/коурс не вешаем мышиные обработчики
     const handleMouseMove = (e: MouseEvent) => {
         const currentX = e.clientX;
         const currentY = e.clientY;
@@ -69,12 +118,6 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
     };
     window.addEventListener('mousemove', handleMouseMove);
     return () => window.removeEventListener('mousemove', handleMouseMove);
-  }, [isTouch]);
-
-  // На таче сразу отключаем текущие координаты и скорость, чтобы не было реакции
-  useEffect(() => {
-    if (!isTouch) return;
-    mouseRef.current = { x: -9999, y: -9999, vx: 0, vy: 0, lastX: -9999, lastY: -9999 };
   }, [isTouch]);
 
   // Animation Loop
@@ -104,7 +147,7 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       const centerY = h / 2;
 
       // 1. Generate Text Bitmap
-      const fontSize = Math.min(w * 0.2, isTouch ? 240 : 230); 
+      const fontSize = Math.min(w * 0.21, isTouch ? 270 : 250); 
       tempCtx.font = `900 ${fontSize}px "Inter", sans-serif`;
       tempCtx.textAlign = 'center';
       tempCtx.textBaseline = 'middle';
@@ -195,11 +238,16 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
 
       ctx.clearRect(0, 0, width, height);
       
-      const mx = isTouch ? -9999 : mouseRef.current.x; 
-      const my = isTouch ? -9999 : mouseRef.current.y; 
+      const interactionsDisabled = disableInteractionsRef.current;
+      if (interactionsDisabled) {
+        mouseRef.current = { x: -9999, y: -9999, vx: 0, vy: 0, lastX: -9999, lastY: -9999 };
+      }
+
+      const mx = interactionsDisabled ? -9999 : mouseRef.current.x; 
+      const my = interactionsDisabled ? -9999 : mouseRef.current.y; 
       // Mouse velocity influence
-      const mvx = mouseRef.current.vx;
-      const mvy = mouseRef.current.vy;
+      const mvx = interactionsDisabled ? 0 : mouseRef.current.vx;
+      const mvy = interactionsDisabled ? 0 : mouseRef.current.vy;
       
       const timeSec = elapsed * 0.001;
 
@@ -243,9 +291,9 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
             const dx = p.x - mx;
             const dy = p.y - my;
             const dist = Math.sqrt(dx*dx + dy*dy);
-            const interactionRadius = isTouch ? 0 : 160; 
+            const interactionRadius = disableInteractionsRef.current ? 0 : 160; 
 
-            if (dist < interactionRadius && !isTouch) {
+            if (dist < interactionRadius && !disableInteractionsRef.current) {
                 const influence = Math.pow(1 - dist / interactionRadius, 3); // Cubic falloff for smoother edge
                 
                 // Repulsion (push away)
@@ -313,24 +361,24 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
       ctx.shadowBlur = 0;
 
       // Tagline
-      if (elapsed > WAVE_APPEAR_TIME) {
-          const taglineAlpha = Math.min((elapsed - WAVE_APPEAR_TIME) / 1500, 1);
-          if (taglineAlpha > 0) {
-              const centerY = height / 2;
-              const taglineSize = Math.min(width * 0.04, 24); 
-              ctx.font = `600 ${taglineSize}px "Inter", sans-serif`;
-              ctx.textAlign = 'center';
-              ctx.textBaseline = 'middle';
-              
-              const tagline = "ГОЛОС ВАШЕГО БИЗНЕСА";
-              const spacedTagline = tagline.split('').join('  ');
-              
-              ctx.fillStyle = `rgba(255, 255, 255, ${taglineAlpha * 0.9})`;
-              ctx.shadowBlur = 15;
-              ctx.shadowColor = `rgba(216, 180, 254, ${taglineAlpha * 0.5})`;
-              ctx.fillText(spacedTagline, width / 2, centerY + 120);
-          }
-      }
+      const centerY = height / 2;
+      const taglineSize = Math.min(width * 0.04, 24); 
+      const tagline = "ГОЛОС ВАШЕГО БИЗНЕСА";
+      const spacedTagline = tagline.split('').join('  ');
+
+      const taglineAlpha = disableInteractionsRef.current
+        ? 0.3
+        : Math.min(Math.max((elapsed - WAVE_APPEAR_TIME) / 1500, 0), 1);
+
+      ctx.font = `600 ${taglineSize}px "Inter", sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = `rgba(255, 255, 255, ${taglineAlpha})`;
+      ctx.shadowBlur = disableInteractionsRef.current ? 8 : 15;
+      ctx.shadowColor = `rgba(216, 180, 254, ${taglineAlpha * (disableInteractionsRef.current ? 0.4 : 0.5)})`;
+      ctx.filter = disableInteractionsRef.current ? 'blur(2.5px)' : 'none';
+      ctx.fillText(spacedTagline, width / 2, centerY + 120);
+      ctx.filter = 'none';
 
       animationFrameId = requestAnimationFrame(animate);
     };
@@ -344,7 +392,10 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({ className = "w-full h-full
   }, [isTouch]);
 
   return (
-    <div ref={containerRef} className={`${className} transition-all duration-100 ease-out will-change-transform`}>
+    <div
+      ref={containerRef}
+      className={`${className} ${isTouch ? 'transition-none' : 'transition-all duration-100 ease-out'} will-change-transform`}
+    >
       <canvas ref={canvasRef} className="block w-full h-full" />
     </div>
   );

@@ -89,7 +89,13 @@ export const GlobalBackground: React.FC = () => {
   return (
     <div className="fixed inset-0 z-0 pointer-events-none">
        {/* Gradient base */}
-       <div className="absolute inset-0 bg-gradient-to-b from-dark-bg via-[#080a0c] to-dark-bg" />
+       <div
+          className={`absolute inset-0 overflow-hidden ${
+            typeof window !== "undefined" && window.innerWidth <= 768
+              ? "pointer-events-none touch-none"
+              : ""
+          }`}
+        />
        {/* Particles */}
        <canvas ref={canvasRef} className="absolute inset-0 w-full h-full opacity-40" />
     </div>
