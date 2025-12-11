@@ -99,6 +99,7 @@ export const Showcase: React.FC = () => {
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
           playPromise.catch(error => {
+              // Silently handle error, state is updated via onError
               setIsPlaying(false);
           });
       }
@@ -107,6 +108,7 @@ export const Showcase: React.FC = () => {
   };
 
   useEffect(() => {
+    // Reset play state when tab changes
     setIsPlaying(false);
   }, [activeTab]);
 
@@ -139,7 +141,7 @@ export const Showcase: React.FC = () => {
              onClick={(e) => { 
                 e.stopPropagation(); 
                 if (audioError) {
-                    alert(`Не удалось загрузить аудиофайл: ${scenario.audioSrc}`);
+                    alert(`Не удалось загрузить аудиофайл: ${scenario.audioSrc}\n\nУбедитесь, что файл существует в папке public/audio вашего проекта.`);
                     return;
                 }
                 togglePlay(); 
@@ -210,14 +212,15 @@ export const Showcase: React.FC = () => {
         preload="auto"
         onEnded={() => setIsPlaying(false)}
         onError={(e) => {
+            // Silenced console.error to avoid spamming the console
             setAudioError(true);
             setIsPlaying(false);
         }}
       />
       
-      {/* Background Blobs - Reduced blur for mobile performance */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-petrol/10 rounded-full blur-[60px] md:blur-[120px] pointer-events-none" />
-      <div className="absolute left-0 bottom-0 w-[500px] h-[500px] bg-lavender/5 rounded-full blur-[50px] md:blur-[100px] pointer-events-none" />
+      {/* Background Blobs */}
+      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-petrol/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute left-0 bottom-0 w-[500px] h-[500px] bg-lavender/5 rounded-full blur-[100px] pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
