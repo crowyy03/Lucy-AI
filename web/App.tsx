@@ -16,8 +16,12 @@ function App() {
     <div className="bg-dark-bg min-h-screen text-zinc-100 selection:bg-lavender selection:text-zinc-900 relative">
       <GlobalBackground />
       
-      {/* Fixed Logo Layer - Behind content */}
-      <div className="fixed inset-0 z-0 pointer-events-none flex items-center justify-center">
+      {/* 
+        FIXED vs ABSOLUTE:
+        - Mobile (default): absolute + h-screen. It sits at the top (Hero) and scrolls UP with the page.
+        - Desktop (md): fixed. It stays pinned and we use the opacity fade effect in BrandLogo.tsx.
+      */}
+      <div className="absolute md:fixed inset-0 z-0 pointer-events-none flex items-center justify-center h-screen md:h-auto overflow-hidden">
         <BrandLogo className="w-full h-full max-w-[1600px]" />
       </div>
 

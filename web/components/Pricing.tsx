@@ -30,7 +30,7 @@ const tiers = [
     minutes: '6 000+',
     features: ['Индивидуальное решение', 'Выделенный менеджер', 'Полная кастомизация', 'SLA контракт'],
     color: 'border-white/5',
-    btnColor: 'bg-petrol text-white hover:bg-petrol-light'
+    btnColor: 'bg-olive text-white hover:bg-olive-light'
   }
 ];
 
@@ -38,7 +38,7 @@ export const Pricing: React.FC = () => {
   return (
     <section id="pricing" className="py-16 md:py-24 bg-dark-bg relative overflow-hidden">
       {/* Background Decor */}
-      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-petrol-dim/10 rounded-full blur-[120px] pointer-events-none" />
+      <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-olive-dim/10 rounded-full blur-[120px] pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div 
@@ -79,7 +79,7 @@ export const Pricing: React.FC = () => {
               <ul className="space-y-4 mb-10 flex-1">
                 {tier.features.map((feat, i) => (
                   <li key={i} className="flex items-start text-sm text-zinc-400">
-                    <Check className="w-4 h-4 text-petrol-light mr-3 flex-shrink-0 mt-0.5" />
+                    <Check className="w-4 h-4 text-olive-light mr-3 flex-shrink-0 mt-0.5" />
                     {feat}
                   </li>
                 ))}

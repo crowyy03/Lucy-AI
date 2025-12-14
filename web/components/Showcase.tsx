@@ -88,41 +88,36 @@ export const Showcase: React.FC = () => {
 
   const togglePlay = () => {
     if (!audioRef.current) return;
-    
-    if (audioError) {
-        return;
-    }
+    if (audioError) return;
 
     if (isPlaying) {
       audioRef.current.pause();
     } else {
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
-          playPromise.catch(error => {
-              // Silently handle error, state is updated via onError
-              setIsPlaying(false);
-          });
+          playPromise.catch(() => setIsPlaying(false));
       }
     }
     setIsPlaying(!isPlaying);
   };
 
   useEffect(() => {
-    // Reset play state when tab changes
     setIsPlaying(false);
   }, [activeTab]);
 
   const ChatInterface = ({ scenario }: { scenario: typeof scenarios[0] }) => (
      <motion.div 
-        initial={{ opacity: 0, height: 0 }}
-        animate={{ opacity: 1, height: 'auto' }}
-        exit={{ opacity: 0, height: 0 }}
+        layout="position"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        exit={{ opacity: 0 }}
+        transition={{ duration: 0.2 }}
         className="rounded-3xl overflow-hidden border border-white/10 bg-[#0A0A0A] shadow-2xl flex flex-col mt-4 lg:mt-0"
      >
         {/* Header */}
-        <div className="bg-zinc-900/80 p-4 md:p-6 border-b border-white/5 flex items-center justify-between backdrop-blur-md sticky top-0 z-20">
+        <div className="bg-zinc-900/90 md:backdrop-blur-md p-4 md:p-6 border-b border-white/5 flex items-center justify-between sticky top-0 z-20">
            <div className="flex items-center gap-3 md:gap-4">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-lavender to-petrol flex items-center justify-center text-zinc-900 shadow-lg relative shrink-0">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-gradient-to-br from-lavender to-olive flex items-center justify-center text-zinc-900 shadow-lg relative shrink-0">
                 {isPlaying && <div className="absolute inset-0 rounded-full animate-ping bg-lavender/30" />}
                 <User size={20} className="md:w-6 md:h-6" />
               </div>
@@ -141,37 +136,26 @@ export const Showcase: React.FC = () => {
              onClick={(e) => { 
                 e.stopPropagation(); 
                 if (audioError) {
-                    alert(`Не удалось загрузить аудиофайл: ${scenario.audioSrc}\n\nУбедитесь, что файл существует в папке public/audio вашего проекта.`);
+                    alert('Ошибка воспроизведения аудио');
                     return;
                 }
                 togglePlay(); 
              }}
              className={`flex items-center gap-2 px-3 py-2 md:px-4 rounded-full transition-all duration-300 font-medium text-xs md:text-sm border ${
                 isPlaying 
-                    ? 'bg-petrol text-white border-petrol hover:bg-petrol-light' 
-                    : audioError 
-                        ? 'bg-red-900/20 text-red-400 border-red-900/50 cursor-help'
-                        : 'bg-white text-zinc-900 border-white hover:bg-lavender hover:border-lavender'
+                    ? 'bg-olive text-white border-olive' 
+                    : 'bg-white text-zinc-900 border-white'
              }`}
            >
-               {audioError ? (
-                   <>
-                    <AlertCircle size={14} />
-                    <span>Ошибка</span>
-                   </>
-               ) : (
-                   <>
-                    {isPlaying ? <Pause size={14} /> : <Play size={14} fill="currentColor" />}
-                    <span>{isPlaying ? 'Пауза' : 'Слушать'}</span>
-                   </>
-               )}
+               {isPlaying ? <Pause size={14} /> : <Play size={14} fill="currentColor" />}
+               <span>{isPlaying ? 'Пауза' : 'Слушать'}</span>
            </button>
         </div>
 
         {/* Benefits Section */}
-        <div className="bg-petrol-dim/20 px-4 py-3 border-b border-white/5 flex flex-wrap gap-2">
+        <div className="bg-olive-dim/20 px-4 py-3 border-b border-white/5 flex flex-wrap gap-2">
             {scenario.benefits.map((benefit, i) => (
-                <span key={i} className="text-[10px] md:text-xs text-lavender bg-lavender/10 px-2 py-1 rounded border border-lavender/20">
+                <span key={i} className="text-[10px] md:text-xs text-white bg-olive/20 px-2 py-1 rounded border border-olive/30">
                     {benefit}
                 </span>
             ))}
@@ -182,15 +166,16 @@ export const Showcase: React.FC = () => {
            {scenario.dialogue.map((msg, i) => (
               <motion.div 
                 key={i} 
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: i * 0.1 }}
+                initial={{ opacity: 0, scale: 0.98 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.3 }}
                 className={`flex ${msg.role === 'client' ? 'justify-end' : 'justify-start'}`}
               >
                 <div className={`max-w-[85%] p-3 md:p-5 rounded-2xl text-sm md:text-base shadow-lg relative leading-snug ${
                   msg.role === 'client' 
                     ? 'bg-[#1E1E1E] text-zinc-200 rounded-br-none border border-zinc-800' 
-                    : 'bg-gradient-to-br from-petrol-dark to-[#1F2C31] text-white border border-petrol/30 rounded-bl-none'
+                    : 'bg-gradient-to-br from-olive-dark to-[#1F2C31] text-white border border-olive/30 rounded-bl-none'
                 }`}>
                    <div className="mb-1 opacity-50 text-[9px] md:text-[10px] uppercase tracking-widest font-bold">
                        {msg.role === 'client' ? 'Клиент' : 'Lucy AI'}
@@ -211,23 +196,18 @@ export const Showcase: React.FC = () => {
         src={scenarios[activeTab].audioSrc} 
         preload="auto"
         onEnded={() => setIsPlaying(false)}
-        onError={(e) => {
-            // Silenced console.error to avoid spamming the console
+        onError={() => {
             setAudioError(true);
             setIsPlaying(false);
         }}
       />
-      
-      {/* Background Blobs */}
-      <div className="absolute right-0 top-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-petrol/10 rounded-full blur-[120px] pointer-events-none" />
-      <div className="absolute left-0 bottom-0 w-[500px] h-[500px] bg-lavender/5 rounded-full blur-[100px] pointer-events-none" />
       
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         <motion.div 
           initial={{ opacity: 0, x: -30 }}
           whileInView={{ opacity: 1, x: 0 }}
-          viewport={{ once: true }}
+          viewport={{ once: true, margin: isMobile ? "-10%" : "-20%" }}
           className="mb-12 lg:mb-0 lg:w-[40%] inline-block"
         >
           <h2 className="text-3xl md:text-5xl font-bold mb-6 text-white leading-tight">
@@ -239,7 +219,7 @@ export const Showcase: React.FC = () => {
         </motion.div>
 
         {isMobile ? (
-            // MOBILE: Accordion Layout
+            // MOBILE: Simpler Accordion
             <div className="flex flex-col gap-4">
                 {scenarios.map((scenario, idx) => (
                     <div key={scenario.id} className="w-full">
@@ -248,7 +228,7 @@ export const Showcase: React.FC = () => {
                           className={`w-full group flex items-center gap-4 p-4 rounded-2xl transition-all duration-300 border text-left ${
                             activeTab === idx 
                               ? 'bg-white/10 border-lavender/30' 
-                              : 'bg-zinc-900/50 border-white/5 hover:bg-white/5'
+                              : 'bg-zinc-900/50 border-white/5'
                           }`}
                         >
                           <div className={`p-3 rounded-xl transition-colors ${activeTab === idx ? 'bg-lavender text-zinc-900' : 'bg-zinc-800 text-zinc-500'}`}>
@@ -264,12 +244,14 @@ export const Showcase: React.FC = () => {
                           </div>
                         </button>
                         
-                        <AnimatePresence>
+                        <AnimatePresence mode="wait">
                             {activeTab === idx && (
                                 <motion.div 
-                                    initial={{ opacity: 0, height: 0 }}
-                                    animate={{ opacity: 1, height: 'auto' }}
-                                    exit={{ opacity: 0, height: 0 }}
+                                    initial={{ height: 0, opacity: 0 }}
+                                    animate={{ height: 'auto', opacity: 1 }}
+                                    exit={{ height: 0, opacity: 0 }}
+                                    transition={{ duration: 0.3, ease: 'easeOut' }}
+                                    className="overflow-hidden"
                                 >
                                     <ChatInterface scenario={scenario} />
                                 </motion.div>
@@ -279,7 +261,7 @@ export const Showcase: React.FC = () => {
                 ))}
             </div>
         ) : (
-            // DESKTOP: Two Columns
+            // DESKTOP
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-start mt-8">
                 <div className="lg:col-span-5 flex flex-col gap-3">
                   {scenarios.map((scenario, idx) => (

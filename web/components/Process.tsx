@@ -90,7 +90,7 @@ export const Process: React.FC = () => {
           transition={{ delay: 0.5 }}
           className="mt-12 flex justify-center"
         >
-            <div className="bg-petrol-dark/30 border border-petrol/20 rounded-full px-6 py-2 md:px-8 md:py-3 backdrop-blur-sm">
+            <div className="bg-olive-dark/30 border border-olive/20 rounded-full px-6 py-2 md:px-8 md:py-3 backdrop-blur-sm">
                 <p className="text-lavender font-medium tracking-wide text-xs md:text-sm flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
                     Среднее время внедрения: <span className="text-white font-bold">2 дня</span>

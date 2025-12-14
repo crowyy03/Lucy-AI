@@ -2,27 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Send, Phone, CheckCircle, Loader2 } from 'lucide-react';
 
-// ИНСТРУКЦИЯ ПО ПОДКЛЮЧЕНИЮ GOOGLE ТАБЛИЦ (БЕСПЛАТНО):
-// 1. Создайте новую Google Таблицу.
-// 2. Назовите первый лист "Leads". В первой строке напишите заголовки: A1="Date", B1="Name", C1="Phone".
-// 3. В меню выберите Расширения (Extensions) > Apps Script.
-// 4. Удалите весь код и вставьте этот:
-/*
-  function doPost(e) {
-    var sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName('Leads');
-    var data = JSON.parse(e.postData.contents);
-    sheet.appendRow([new Date(), data.name, data.phone]);
-    return ContentService.createTextOutput(JSON.stringify({'result': 'success'})).setMimeType(ContentService.MimeType.JSON);
-  }
-*/
-// 5. Нажмите "Начать развертывание" (Deploy) > "Новое развертывание" (New deployment).
-// 6. Выберите тип "Веб-приложение" (Web app).
-// 7. Описание: "Lucy Leads".
-// 8. Кто имеет доступ (Who has access): "Все" (Anyone) !!! ВАЖНО !!!
-// 9. Нажмите "Развернуть" (Deploy).
-// 10. Скопируйте "URL веб-приложения" (Web App URL) и вставьте его ниже в переменную GOOGLE_SCRIPT_URL.
-
-const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMmrDrNtdzLpRFpyt9E8I0e2q3LGmvacNepirdu9VUWmXaF7nWFW9hJDl5nqts90jUJg/exec"; // ВСТАВЬТЕ ССЫЛКУ СЮДА
+const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbyMmrDrNtdzLpRFpyt9E8I0e2q3LGmvacNepirdu9VUWmXaF7nWFW9hJDl5nqts90jUJg/exec";
 
 export const Contact: React.FC = () => {
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -35,7 +15,6 @@ export const Contact: React.FC = () => {
     
     setIsLoading(true);
 
-    // If no URL is provided, we simulate success for demo purposes
     if (!GOOGLE_SCRIPT_URL) {
         console.warn("GOOGLE_SCRIPT_URL не установлен. Данные не отправлены в таблицу.");
         setTimeout(() => {
@@ -48,13 +27,12 @@ export const Contact: React.FC = () => {
     try {
         await fetch(GOOGLE_SCRIPT_URL, {
             method: 'POST',
-            mode: 'no-cors', // Important for Google Script
+            mode: 'no-cors',
             headers: {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify(formData)
         });
-        // Since no-cors returns an opaque response, we assume success if no error thrown
         setIsLoading(false);
         setIsSubmitted(true);
     } catch (error) {
@@ -66,7 +44,7 @@ export const Contact: React.FC = () => {
 
   return (
     <footer id="contact" className="bg-dark-bg border-t border-zinc-900 pt-16 md:pt-24 pb-12 relative overflow-hidden">
-      <div className="absolute bottom-0 left-0 w-full h-[500px] bg-gradient-to-t from-petrol-dim/20 to-transparent pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-full h-[500px] bg-gradient-to-t from-olive-dim/20 to-transparent pointer-events-none" />
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20">
@@ -93,12 +71,12 @@ export const Contact: React.FC = () => {
               </a>
               
               <a href="tel:+79112107857" className="flex items-center group">
-                <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800 group-hover:border-petrol-light transition-colors mr-5">
-                  <Phone className="text-petrol-light w-5 h-5" />
+                <div className="w-12 h-12 rounded-full bg-zinc-900 flex items-center justify-center border border-zinc-800 group-hover:border-olive-light transition-colors mr-5">
+                  <Phone className="text-olive-light w-5 h-5" />
                 </div>
                 <div>
                   <p className="text-xs text-zinc-500 uppercase tracking-widest mb-1">Телефон</p>
-                  <p className="text-white text-lg group-hover:text-petrol-light transition-colors">+7 911 210-78-57</p>
+                  <p className="text-white text-lg group-hover:text-olive-light transition-colors">+7 911 210-78-57</p>
                 </div>
               </a>
             </div>
@@ -131,7 +109,7 @@ export const Contact: React.FC = () => {
                         <input 
                             required
                             type="text" 
-                            className="w-full bg-dark-bg/50 border border-zinc-800 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-petrol transition-colors placeholder:text-zinc-600" 
+                            className="w-full bg-dark-bg/50 border border-zinc-800 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-olive transition-colors placeholder:text-zinc-600" 
                             placeholder="Ваше имя" 
                             value={formData.name}
                             onChange={(e) => setFormData({...formData, name: e.target.value})}
@@ -141,7 +119,7 @@ export const Contact: React.FC = () => {
                         <input 
                             required
                             type="tel" 
-                            className="w-full bg-dark-bg/50 border border-zinc-800 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-petrol transition-colors placeholder:text-zinc-600" 
+                            className="w-full bg-dark-bg/50 border border-zinc-800 rounded-xl px-5 py-4 text-white focus:outline-none focus:border-olive transition-colors placeholder:text-zinc-600" 
                             placeholder="Телефон" 
                             value={formData.phone}
                             onChange={(e) => setFormData({...formData, phone: e.target.value})}
@@ -150,7 +128,7 @@ export const Contact: React.FC = () => {
                       <button 
                         type="submit" 
                         disabled={isLoading}
-                        className="w-full bg-gradient-to-r from-petrol to-petrol-light text-white font-bold py-5 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full bg-gradient-to-r from-olive to-olive-light text-white font-bold py-5 rounded-xl hover:opacity-90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         {isLoading ? <Loader2 className="animate-spin" /> : 'Обсудить проект'}
                       </button>

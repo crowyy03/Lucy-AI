@@ -20,7 +20,7 @@
     
     <!-- ВАЖНО: Для Telegram и WhatsApp лучше использовать полную ссылку (absolute URL) -->
     <!-- Вам нужно добавить файл og-image.png (размером 1200x630px) в папку public -->
-    <meta property="og:image" content="https://www.ilucy.tech/og-image.jpeg" />
+    <meta property="og:image" content="https://www.ilucy.tech/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     
@@ -28,7 +28,7 @@
     <meta property="twitter:card" content="summary_large_image" />
     <meta property="twitter:title" content="Lucy AI — Голос вашего бизнеса" />
     <meta property="twitter:description" content="Замените колл-центр на искусственный интеллект. Отвечает мгновенно, не болеет, записывает клиентов." />
-    <meta property="twitter:image" content="https://www.ilucy.tech/og-image.jpeg" />
+    <meta property="twitter:image" content="https://www.ilucy.tech/og-image.png" />
 
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
@@ -41,11 +41,12 @@
                 glow: '#E9D5FF',
                 dim: '#A78BFA'
               },
-              petrol: {
-                DEFAULT: '#4A6670', // Swamp-Blue Pastel
-                light: '#658491',
-                dark: '#2F4249',
-                dim: '#1F2C31'
+              olive: {
+                DEFAULT: '#728C69', // Fresh Muted Olive
+                light: '#96AF8B',   // Sage-like highlight
+                glow: '#C8E6C9',    // Bright glow
+                dark: '#3E4C38',    // Deep organic green
+                dim: '#232D21'      // Almost black green
               },
               dark: {
                 bg: '#050505',
@@ -55,6 +56,7 @@
             },
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
+              rounded: ['Nunito', 'sans-serif'],
             },
             animation: {
               'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
@@ -71,7 +73,7 @@
         },
       }
     </script>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Nunito:wght@700;900&display=swap" rel="stylesheet">
     <style>
       body {
         background-color: #050505;
@@ -93,6 +95,13 @@
         background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
       }
 
+      /* OPTIMIZATION: Disable noise on mobile to prevent lag */
+      @media (max-width: 768px) {
+        .bg-noise {
+          display: none;
+        }
+      }
+
       /* Custom Scrollbar */
       ::-webkit-scrollbar {
         width: 6px;
@@ -105,7 +114,7 @@
         border-radius: 4px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #4A6670;
+        background: #728C69;
       }
       .glass-nav {
         background: rgba(5, 5, 5, 0.6);

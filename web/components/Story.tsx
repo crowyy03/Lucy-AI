@@ -12,7 +12,7 @@ export const Story: React.FC = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.8 }}
           >
-            <span className="text-petrol-light font-mono text-xs uppercase tracking-[0.2em] mb-6 block">
+            <span className="text-olive-light font-mono text-xs uppercase tracking-[0.2em] mb-6 block">
               Наша миссия
             </span>
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-8 leading-tight">

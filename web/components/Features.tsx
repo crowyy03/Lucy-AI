@@ -1,153 +1,126 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Clock, MessageCircle, CalendarCheck, ShieldCheck, DollarSign, TrendingUp, Mic, Brain, Zap } from 'lucide-react';
-import { useIsTouchDevice } from '../hooks/useIsTouchDevice';
+import { Mic, Zap, Layers, Globe, Shield, Smartphone, ChevronDown } from 'lucide-react';
 
-const features = [
+const featuresList = [
   {
-    id: 1,
-    icon: <Clock className="text-lavender w-6 h-6 md:w-8 md:h-8" />,
-    title: "Всегда онлайн",
-    subtitle: "24/7 Доступность",
-    desc: "Lucy никогда не спит. Она обрабатывает 100% входящих звонков, даже если их поступает 50 одновременно. Ни один клиент не услышит «занято»."
+    icon: <Mic className="w-6 h-6 text-lavender" />,
+    title: "Естественная речь",
+    description: "Благодаря современным LLM, Lucy говорит так же естественно, как человек, понимает контекст и перебивания."
   },
   {
-    id: 2,
-    icon: <Brain className="text-petrol-light w-6 h-6 md:w-8 md:h-8" />,
-    title: "Эмпатия",
-    subtitle: "Понимает эмоции",
-    desc: "Наш AI различает эмоции клиента. Если клиент раздражен, Lucy успокоит. Если спешит — ускорит запись. Она помнит контекст предыдущих разговоров."
+    icon: <Zap className="w-6 h-6 text-lavender" />,
+    title: "Мгновенный ответ",
+    description: "Задержка ответа менее 800мс. Клиент не чувствует, что разговаривает с роботом."
   },
   {
-    id: 3,
-    icon: <CalendarCheck className="text-lavender w-6 h-6 md:w-8 md:h-8" />,
-    title: "Запись в CRM",
-    subtitle: "YClients / Amo",
-    desc: "Глубокая интеграция с YClients, AmoCRM, Bitrix24. Lucy видит свободные слоты в реальном времени. Запись попадает в ваш календарь мгновенно."
+    icon: <Layers className="w-6 h-6 text-lavender" />,
+    title: "Интеграции",
+    description: "Подключаемся к YClients, AmoCRM, Bitrix24 и Google Calendar. Запись попадает в график мгновенно."
   },
   {
-    id: 4,
-    icon: <ShieldCheck className="text-petrol-light w-6 h-6 md:w-8 md:h-8" />,
-    title: "Без ошибок",
-    subtitle: "Идеальный скрипт",
-    desc: "Человеческий фактор исключен. Администратор не забудет перезвонить, не перепутает время и всегда предложит доп. услуги по скрипту."
+    icon: <Globe className="w-6 h-6 text-lavender" />,
+    title: "Работа 24/7",
+    description: "Lucy не спит, не ест и не уходит в отпуск. Она обрабатывает звонки круглосуточно."
   },
   {
-    id: 5,
-    icon: <DollarSign className="text-lavender w-6 h-6 md:w-8 md:h-8" />,
-    title: "Выгода",
-    subtitle: "Дешевле в 5 раз",
-    desc: "Стоимость подписки в 5-10 раз ниже зарплаты администратора. Нет налогов, отпускных и больничных. Вы платите только за реальный результат."
+    icon: <Shield className="w-6 h-6 text-lavender" />,
+    title: "Безопасность",
+    description: "Все данные шифруются. Мы подписываем NDA и гарантируем конфиденциальность базы клиентов."
   },
   {
-    id: 6,
-    icon: <TrendingUp className="text-petrol-light w-6 h-6 md:w-8 md:h-8" />,
-    title: "Конверсия",
-    subtitle: "Рост до 40%",
-    desc: "Мгновенный ответ удерживает «горячих» клиентов. Прозвон потерянной базы возвращает старых. Lucy автоматически напоминает о визитах."
-  },
-  {
-    id: 7,
-    icon: <Mic className="text-lavender w-6 h-6 md:w-8 md:h-8" />,
-    title: "Голос",
-    subtitle: "Реализм 100%",
-    desc: "Мы используем модели (Gemini/OpenAI), обученные на русском языке. Паузы, вдохи, «хм» и «ага» делают речь неотличимой от человека."
-  },
-  {
-    id: 8,
-    icon: <Zap className="text-petrol-light w-6 h-6 md:w-8 md:h-8" />,
-    title: "Запуск",
-    subtitle: "За 24 часа",
-    desc: "Не нужно месяц обучать сотрудника. Мы настраиваем базу знаний вашего бизнеса за 1 день. Lucy готова к работе сразу после подключения."
+    icon: <Smartphone className="w-6 h-6 text-lavender" />,
+    title: "Работа везде",
+    description: "Принимаем звонки с мобильных, городских номеров и мессенджеров (Telegram, WhatsApp)."
   }
 ];
 
 export const Features: React.FC = () => {
-  const [hoveredId, setHoveredId] = useState<number | null>(null);
-  const isTouchDevice = useIsTouchDevice();
+  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
+  const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-  // Helper for touch devices to toggle card expand
-  const handleTouch = (id: number) => {
-      setHoveredId(hoveredId === id ? null : id);
-  }
+  const handleCardClick = (index: number) => {
+    if (!isMobile) return;
+    setExpandedIndex(expandedIndex === index ? null : index);
+  };
 
   return (
-    <section id="features" className="py-16 md:py-24 relative z-10 overflow-visible">
-      
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 relative">
+    <section id="features" className="py-20 relative bg-transparent">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <motion.div 
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
-          className="text-center mb-12 md:mb-16"
+          viewport={{ once: true, margin: isMobile ? "-10%" : "-20%" }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
         >
-          <span className="text-lavender font-mono text-[10px] md:text-xs uppercase tracking-[0.3em] mb-4 block">Технологическое превосходство</span>
-          <h2 className="text-3xl md:text-7xl font-bold mb-6 text-white tracking-tighter">
-            Больше, чем просто <br/>
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-lavender via-white to-petrol-light">интеллект</span>
-          </h2>
-          <p className="text-zinc-400 text-sm md:text-lg max-w-2xl mx-auto leading-relaxed">
-            Lucy AI — это комплексная платформа коммуникации, которая заменяет целый отдел колл-центра, работая точнее, быстрее и дешевле.
+          <h2 className="text-3xl md:text-5xl font-bold text-white mb-6">Возможности платформы</h2>
+          <p className="text-zinc-500 max-w-2xl mx-auto">
+            Технологии, которые превращают обычную телефонию в мощный инструмент продаж.
           </p>
         </motion.div>
 
-        {/* Changed grid-cols-1 to grid-cols-2 for mobile */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-6">
-          {features.map((feature, idx) => (
-            <motion.div
-              key={feature.id}
-              layout={!isTouchDevice}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "-10%" }}
-              transition={{ delay: idx * 0.05, duration: isTouchDevice ? 0.35 : 0.5 }}
-              onMouseEnter={!isTouchDevice ? () => setHoveredId(feature.id) : undefined}
-              onMouseLeave={!isTouchDevice ? () => setHoveredId(null) : undefined}
-              onClick={isTouchDevice ? () => handleTouch(feature.id) : undefined} // For mobile tap
-              className={`relative cursor-pointer md:cursor-default overflow-hidden rounded-2xl md:rounded-3xl border transition-all ${isTouchDevice ? 'duration-300' : 'duration-500'} flex flex-col justify-start ${
-                hoveredId === feature.id 
-                  ? 'bg-zinc-900/90 border-lavender/40 shadow-[0_0_40px_rgba(216,180,254,0.15)] z-20 h-[280px] md:h-[320px]' 
-                  : 'bg-white/[0.03] border-white/[0.05] h-[160px] md:h-[240px] hover:border-white/20'
-              }`}
-            >
-              <div className="p-4 md:p-8 relative z-10 h-full flex flex-col">
-                <div className="flex justify-between items-start mb-3 md:mb-6">
-                  <div className={`p-2 md:p-3 rounded-lg md:rounded-xl transition-colors duration-500 ${hoveredId === feature.id ? 'bg-lavender text-zinc-900' : 'bg-white/5 text-zinc-400'}`}>
-                    {feature.icon}
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-8">
+          {featuresList.map((feature, index) => {
+            const isExpanded = expandedIndex === index;
+            
+            return (
+              <motion.div
+                key={index}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true, margin: isMobile ? "0px" : "-50px" }}
+                transition={{ delay: isMobile ? 0 : index * 0.1, duration: 0.5 }}
+                onClick={() => handleCardClick(index)}
+                className={`
+                  relative p-4 md:p-6 rounded-2xl bg-white/5 border border-white/10 
+                  hover:border-lavender/30 transition-all duration-300 group 
+                  flex flex-col items-center text-center md:items-start md:text-left
+                  ${isExpanded ? 'bg-white/10 z-20 scale-[1.02] shadow-xl' : ''}
+                  ${isMobile ? 'cursor-pointer active:scale-95' : ''}
+                `}
+              >
+                <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-zinc-900 flex items-center justify-center mb-3 md:mb-4 md:group-hover:scale-110 transition-transform">
+                  <div className="scale-90 md:scale-100">
+                      {feature.icon}
                   </div>
-                  <motion.div 
-                     animate={{ rotate: hoveredId === feature.id ? 45 : 0, opacity: hoveredId === feature.id ? 1 : 0.3 }}
-                     className="hidden md:block"
-                  >
-                     <div className="w-2 h-2 rounded-full bg-white" />
-                  </motion.div>
                 </div>
-
-                <div>
-                  <h3 className={`text-sm md:text-xl font-bold mb-1 transition-colors leading-tight ${hoveredId === feature.id ? 'text-white' : 'text-zinc-200'}`}>
+                
+                <h3 className="text-sm md:text-xl font-bold text-white mb-2 leading-tight w-full">
                     {feature.title}
-                  </h3>
-                  <p className="text-[10px] md:text-xs text-zinc-500 font-bold uppercase tracking-wider mb-2">{feature.subtitle}</p>
-                </div>
+                </h3>
+                
+                {/* Desktop Description (Always Visible) */}
+                <p className="text-zinc-400 text-sm leading-relaxed hidden md:block">
+                  {feature.description}
+                </p>
 
-                {/* Animated Description on Hover */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: hoveredId === feature.id ? 1 : 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="mt-auto"
-                >
-                  <p className="text-zinc-300 text-[10px] md:text-sm leading-relaxed border-t border-white/10 pt-2 md:pt-4">
-                    {feature.desc}
-                  </p>
-                </motion.div>
-              </div>
-              
-              {/* Background Glow */}
-              <div className={`absolute inset-0 bg-gradient-to-b from-lavender/5 to-transparent transition-opacity duration-500 pointer-events-none ${hoveredId === feature.id ? 'opacity-100' : 'opacity-0'}`} />
-            </motion.div>
-          ))}
+                {/* Mobile Description (Expandable) */}
+                <div className="md:hidden w-full">
+                    <AnimatePresence>
+                        {isExpanded && (
+                            <motion.div
+                                initial={{ opacity: 0, height: 0 }}
+                                animate={{ opacity: 1, height: 'auto' }}
+                                exit={{ opacity: 0, height: 0 }}
+                                className="overflow-hidden"
+                            >
+                                <p className="text-zinc-300 text-[11px] leading-snug pt-2 pb-1 border-t border-white/10 mt-2">
+                                    {feature.description}
+                                </p>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                    
+                    {!isExpanded && (
+                       <div className="mt-2 flex justify-center opacity-30">
+                           <ChevronDown size={14} className="animate-bounce" />
+                       </div>
+                    )}
+                </div>
+              </motion.div>
+            );
+          })}
         </div>
       </div>
     </section>
