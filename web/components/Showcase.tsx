@@ -92,17 +92,32 @@ export const Showcase: React.FC = () => {
 
     if (isPlaying) {
       audioRef.current.pause();
+      setIsPlaying(false);
     } else {
       const playPromise = audioRef.current.play();
       if (playPromise !== undefined) {
-          playPromise.catch(() => setIsPlaying(false));
+          playPromise
+            .then(() => {
+              setIsPlaying(true);
+            })
+            .catch((error) => {
+              console.error('Play error:', error);
+              setAudioError(true);
+              setIsPlaying(false);
+            });
+      } else {
+        setIsPlaying(true);
       }
     }
-    setIsPlaying(!isPlaying);
   };
 
   useEffect(() => {
     setIsPlaying(false);
+    setAudioError(false);
+    // Перезагружаем аудио при смене вкладки
+    if (audioRef.current) {
+      audioRef.current.load();
+    }
   }, [activeTab]);
 
   const ChatInterface = ({ scenario }: { scenario: typeof scenarios[0] }) => (
@@ -194,11 +209,15 @@ export const Showcase: React.FC = () => {
         key={scenarios[activeTab].id}
         ref={audioRef} 
         src={scenarios[activeTab].audioSrc} 
-        preload="auto"
+        preload="metadata"
         onEnded={() => setIsPlaying(false)}
-        onError={() => {
+        onError={(e) => {
+            console.error('Audio error:', e);
             setAudioError(true);
             setIsPlaying(false);
+        }}
+        onLoadedData={() => {
+            setAudioError(false);
         }}
       />
       
