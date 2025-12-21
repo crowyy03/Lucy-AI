@@ -209,7 +209,7 @@ export const Showcase: React.FC = () => {
         key={scenarios[activeTab].id}
         ref={audioRef} 
         src={scenarios[activeTab].audioSrc} 
-        preload="metadata"
+        preload="none"
         onEnded={() => setIsPlaying(false)}
         onError={(e) => {
             console.error('Audio error:', e);
