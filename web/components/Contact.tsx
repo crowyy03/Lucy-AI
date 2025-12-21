@@ -132,6 +132,9 @@ export const Contact: React.FC = () => {
                       >
                         {isLoading ? <Loader2 className="animate-spin" /> : 'Обсудить проект'}
                       </button>
+                      <div className="text-center text-xs text-zinc-600 pt-2">
+                        Нажимая кнопку, вы соглашаетесь с <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer" className="underline hover:text-zinc-400 transition-colors">Политикой конфиденциальности</a> и даёте согласие на обработку персональных данных.
+                      </div>
                     </form>
                 </>
             )}
@@ -141,7 +144,7 @@ export const Contact: React.FC = () => {
         <div className="mt-16 pt-8 border-t border-zinc-900 flex flex-col md:flex-row justify-between items-center text-sm text-zinc-600">
           <p>© {new Date().getFullYear()} Lucy AI. Все права защищены.</p>
           <div className="flex gap-4 mt-4 md:mt-0">
-             <a href="#" className="hover:text-zinc-400">Политика конфиденциальности</a>
+             <a href="/privacy-policy.html" target="_blank" rel="noopener noreferrer" className="hover:text-zinc-400 transition-colors">Политика конфиденциальности</a>
           </div>
         </div>
       </div>
